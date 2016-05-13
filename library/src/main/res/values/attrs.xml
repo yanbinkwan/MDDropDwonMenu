@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MaterialDropMenu">
+        <attr name="maskColor" format="color" />
+
+        <attr name="textSelectedColor" format="color" />
+        <attr name="textUnSelectedColor" format="color" />
+        <attr name="underlineColor" format="color" />
+
+        <attr name="menuTitleSize" format="dimension" />
+        <attr name="menuBackgroundColor" format="color" />
+        <attr name="menuIndicatorColor" format="color" />
+        <attr name="menuExpandingIcon" format="reference" />
+        <attr name="menuCloseUpIcon" format="reference" />
+    </declare-styleable>
+
+</resources>
