@@ -10,6 +10,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -18,6 +19,11 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import williamguan.com.library.entity.MenuItemEntity;
 
 /**
  * williamguan.com.library
@@ -39,6 +45,8 @@ public class MaterialDropMenu extends LinearLayout {
     private int menuBackgroundColor;
 
     private int menuIndicatorColor;
+
+    private List<MenuItemEntity> menuItemEntities;
 
     private Drawable menuExpandingIcon;
 
@@ -69,6 +77,8 @@ public class MaterialDropMenu extends LinearLayout {
     public MaterialDropMenu(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setOrientation(VERTICAL);
+
+        menuItemEntities = new ArrayList<>();
 
         TypedValue value = new TypedValue();
         context.getTheme().resolveAttribute(R.attr.colorPrimary, value, true);
@@ -102,6 +112,12 @@ public class MaterialDropMenu extends LinearLayout {
         maskView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         maskView.setBackgroundColor(maskColor);
         maskView.setVisibility(GONE);
+        maskView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeMenu();
+            }
+        });
 
         popupMenuContainer = new FrameLayout(context);
         popupMenuContainer.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -116,7 +132,7 @@ public class MaterialDropMenu extends LinearLayout {
         addView(bottomContainerView);
     }
 
-    public ListView addListMenu(String menuTitle, final BaseAdapter adapter, boolean widthIcon, int height) {
+    public MenuItemEntity addListMenu(String menuTitle, final BaseAdapter adapter, boolean widthIcon, int height) {
         ListView lv = new ListView(getContext());
         lv.setBackgroundColor(menuBackgroundColor);
         if (height != 0) {
@@ -132,31 +148,32 @@ public class MaterialDropMenu extends LinearLayout {
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    menuListItemClickListener.onMenuListItemClick(parent, view, position, (String) adapter.getItem(position));
+                    menuListItemClickListener.onMenuListItemClick(view, position, adapter, currentTabPosition, menuItemEntities);
                     setMenuText((String) adapter.getItem(position), currentTabPosition);
                     closeMenu();
                 }
             });
         }
         popupMenuContainer.addView(lv);
-        addMenu(menuTitle, widthIcon);
-        return lv;
+        return addMenu(menuTitle, widthIcon);
     }
 
-    public ListView addListMenu(String menuTitle, final BaseAdapter adapter, int height) {
+    public MenuItemEntity addListMenu(String menuTitle, final BaseAdapter adapter, int height) {
         return addListMenu(menuTitle, adapter, true, height);
     }
 
-    public ListView addListMenu(String menuTitle, String[] data, boolean widthIcon) {
+    public MenuItemEntity addListMenu(String menuTitle, String[] data, boolean widthIcon) {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, data);
         return addListMenu(menuTitle, adapter, widthIcon, 0);
     }
 
-    public ListView addListMenu(String menuTitle, BaseAdapter adapter) {
+    public MenuItemEntity addListMenu(String menuTitle, BaseAdapter adapter) {
         return addListMenu(menuTitle, adapter, true, 0);
     }
 
-    private TextView addMenu(String menuTitle, boolean widthIcon) {
+    public MenuItemEntity addMenu(String menuTitle, boolean widthIcon) {
+
+
         final LinearLayout menuTitleContainer = new LinearLayout(getContext());
         menuTitleContainer.setLayoutParams(
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
@@ -191,6 +208,9 @@ public class MaterialDropMenu extends LinearLayout {
             menuTitleView.setTag("widthIcon");
             menuTitleView.setCompoundDrawablesWithIntrinsicBounds(null, null, menuExpandingIcon, null);
             menuTitleView.setCompoundDrawablePadding(dpToPx(5));
+        } else {
+            View emptyView = new View(getContext());
+            popupMenuContainer.addView(emptyView);
         }
 
         View menuIndicator = new View(getContext());
@@ -209,7 +229,14 @@ public class MaterialDropMenu extends LinearLayout {
 
         menuTitleContainer.addView(container);
         menuContainer.addView(menuTitleContainer);
-        return menuTitleView;
+
+        MenuItemEntity menuItemEntity = new MenuItemEntity();
+        menuItemEntity.setShowMask(widthIcon);
+        menuItemEntity.setText(menuTitleView.getText().toString());
+        menuItemEntities.add(menuItemEntity);
+        menuTitleContainer.setTag(menuItemEntity);
+
+        return menuItemEntity;
     }
 
     private void selectMenu(View menu) {
@@ -227,13 +254,22 @@ public class MaterialDropMenu extends LinearLayout {
                 } else {
                     if (currentTabPosition == -1) {
                         popupMenuContainer.setVisibility(VISIBLE);
+                        if (((MenuItemEntity) menu.getTag()).isShowMask()) {
+                            maskView.setVisibility(VISIBLE);
+                            maskView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.dd_menu_in));
+                        }
                         popupMenuContainer.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.dd_menu_in));
                         popupMenuContainer.getChildAt(i).setVisibility(VISIBLE);
-                        maskView.setVisibility(VISIBLE);
-                        maskView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.dd_menu_in));
+
                     } else {
-                        popupMenuContainer.getChildAt(i).setVisibility(VISIBLE);
-                        maskView.setVisibility(VISIBLE);
+                        if (popupMenuContainer.getChildAt(i) != null) {
+                            popupMenuContainer.getChildAt(i).setVisibility(VISIBLE);
+                        }
+                        if (((MenuItemEntity) menu.getTag()).isShowMask()) {
+                            maskView.setVisibility(VISIBLE);
+                        } else {
+                            maskView.setVisibility(GONE);
+                        }
                     }
                     title.setTextColor(textSelectedColor);
                     indicator.setVisibility(VISIBLE);
@@ -243,7 +279,10 @@ public class MaterialDropMenu extends LinearLayout {
                     }
                 }
             } else {
-                popupMenuContainer.getChildAt(i).setVisibility(View.GONE);
+                View childView = popupMenuContainer.getChildAt(i);
+                if (childView != null) {
+                    popupMenuContainer.getChildAt(i).setVisibility(View.GONE);
+                }
                 title.setTextColor(textUnSelectedColor);
                 indicator.setVisibility(INVISIBLE);
                 if (title.getTag() != null) {
@@ -254,8 +293,24 @@ public class MaterialDropMenu extends LinearLayout {
     }
 
     private void closeMenu() {
-        popupMenuContainer.setVisibility(GONE);
-        popupMenuContainer.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.dd_menu_out));
+        Animation animation = AnimationUtils.loadAnimation(getContext(), R.anim.dd_menu_out);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                popupMenuContainer.setVisibility(GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        popupMenuContainer.setAnimation(animation);
         maskView.setVisibility(GONE);
         currentTabPosition = -1;
     }
@@ -263,6 +318,7 @@ public class MaterialDropMenu extends LinearLayout {
     public void setMenuText(String text, int position) {
         ((TextView) ((LinearLayout) ((LinearLayout)
                 menuContainer.getChildAt(position)).getChildAt(0)).getChildAt(0)).setText(text);
+
     }
 
     public void setCurrentMenuText(String text) {
@@ -289,6 +345,7 @@ public class MaterialDropMenu extends LinearLayout {
     }
 
     public interface OnMenuListItemClickListener {
-        void onMenuListItemClick(AdapterView<?> parent, View view, int position, String data);
+
+        void onMenuListItemClick(View view, int position, BaseAdapter adapter, int menuPosition, List<MenuItemEntity> menuInfo);
     }
 }

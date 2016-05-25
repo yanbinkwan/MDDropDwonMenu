@@ -3,13 +3,14 @@ package williamguan.com.dropdmenu;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.TextView;
+import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import java.util.Arrays;
+import java.util.List;
 
 import williamguan.com.library.MaterialDropMenu;
+import williamguan.com.library.entity.MenuItemEntity;
 
 public class MainActivity extends AppCompatActivity {
     private String constellations[] = {"不限", "白羊座", "金牛座", "双子座", "巨蟹座", "狮子座", "处女座", "天秤座", "天蝎座", "射手座", "摩羯座", "水瓶座", "双鱼座"};
@@ -22,19 +23,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         MaterialDropMenu materialDropMenu = (MaterialDropMenu) findViewById(R.id.materialDropMenu);
         if (materialDropMenu != null) {
-            materialDropMenu.setMenuItemClickListener(new MaterialDropMenu.OnMenuItemClickListener() {
-                @Override
-                public void onMenuItemClick(TextView menuText, int position) {
-                    Toast.makeText(MainActivity.this, menuText.getText(), Toast.LENGTH_SHORT).show();
-                }
-            });
             materialDropMenu.setMenuListItemClickListener(new MaterialDropMenu.OnMenuListItemClickListener() {
+
                 @Override
-                public void onMenuListItemClick(AdapterView<?> parent, View view, int position, String data) {
-                    Toast.makeText(MainActivity.this, data, Toast.LENGTH_SHORT).show();
+                public void onMenuListItemClick(View view, int position, BaseAdapter adapter, int menuPosition, List<MenuItemEntity> menuInfo) {
+                    MenuItemEntity me = menuInfo.get(menuPosition);
+                    me.setText(adapter.getItem(position).toString());
+                    for (MenuItemEntity menuItemEntity : menuInfo) {
+                        Toast.makeText(MainActivity.this, menuItemEntity.getText(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
-            materialDropMenu.addListMenu("全部", new ListDropDownAdapter(this, Arrays.asList(constellations)));
+            materialDropMenu.addMenu("全部", false);
             materialDropMenu.addListMenu("项目", new ListDropDownAdapter(this, Arrays.asList(data)), 300);
             materialDropMenu.addListMenu("时间", new ListDropDownAdapter(this, Arrays.asList(data1)), 213);
             materialDropMenu.addListMenu("难度", new ListDropDownAdapter(this, Arrays.asList(constellations)));

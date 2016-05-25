@@ -11,6 +11,16 @@ public class MenuItemEntity {
 
     private Object tag;
 
+    private boolean showMask;
+
+    public boolean isShowMask() {
+        return showMask;
+    }
+
+    public void setShowMask(boolean showMask) {
+        this.showMask = showMask;
+    }
+
     public Object getTag() {
         return tag;
     }
