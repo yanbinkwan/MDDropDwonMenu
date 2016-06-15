@@ -148,8 +148,8 @@ public class MaterialDropMenu extends LinearLayout {
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    menuListItemClickListener.onMenuListItemClick(view, position, adapter, currentTabPosition, menuItemEntities);
-                    setMenuText((String) adapter.getItem(position), currentTabPosition);
+                    menuListItemClickListener.onMenuListItemClick(view, position, adapter);
+                    setMenuText(adapter.getItem(position).toString(), currentTabPosition);
                     closeMenu();
                 }
             });
@@ -172,8 +172,6 @@ public class MaterialDropMenu extends LinearLayout {
     }
 
     public MenuItemEntity addMenu(String menuTitle, boolean widthIcon) {
-
-
         final LinearLayout menuTitleContainer = new LinearLayout(getContext());
         menuTitleContainer.setLayoutParams(
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
@@ -199,7 +197,7 @@ public class MaterialDropMenu extends LinearLayout {
             menuTitleView.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    menuItemClickListener.onMenuItemClick((TextView) v, currentTabPosition);
+                    menuItemClickListener.onMenuItemClick(v, currentTabPosition);
                     menuTitleContainer.callOnClick();
                 }
             });
@@ -235,7 +233,6 @@ public class MaterialDropMenu extends LinearLayout {
         menuItemEntity.setText(menuTitleView.getText().toString());
         menuItemEntities.add(menuItemEntity);
         menuTitleContainer.setTag(menuItemEntity);
-
         return menuItemEntity;
     }
 
@@ -276,6 +273,9 @@ public class MaterialDropMenu extends LinearLayout {
                     currentTabPosition = i;
                     if (title.getTag() != null) {
                         title.setCompoundDrawablesWithIntrinsicBounds(null, null, menuCloseUpIcon, null);
+                    }
+                    if (menuItemClickListener != null) {
+                        menuItemClickListener.onMenuItemClick(menu, currentTabPosition);
                     }
                 }
             } else {
@@ -335,17 +335,25 @@ public class MaterialDropMenu extends LinearLayout {
         this.menuItemClickListener = menuItemClickListener;
     }
 
+    public int getCurrentTabPosition() {
+        return currentTabPosition;
+    }
+
+    public List<MenuItemEntity> getMenuItemEntities() {
+        return menuItemEntities;
+    }
+
     public int dpToPx(float value) {
         DisplayMetrics dm = getResources().getDisplayMetrics();
         return (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, dm) + 0.5);
     }
 
     public interface OnMenuItemClickListener {
-        void onMenuItemClick(TextView menuText, int position);
+        void onMenuItemClick(View menuView, int position);
     }
 
     public interface OnMenuListItemClickListener {
 
-        void onMenuListItemClick(View view, int position, BaseAdapter adapter, int menuPosition, List<MenuItemEntity> menuInfo);
+        void onMenuListItemClick(View view, int position, BaseAdapter adapter);
     }
 }

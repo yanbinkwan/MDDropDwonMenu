@@ -1,4 +1,4 @@
-package williamguan.com.dropdmenu;
+package williamguan.com.dropdmenu.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,16 +9,18 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import williamguan.com.dropdmenu.R;
+
 
 public class ListDropDownAdapter extends BaseAdapter {
 
     private Context context;
-    private List<String> list;
+    private List<String> userEntityList;
     private int checkItemPosition = 0;
 
-    public ListDropDownAdapter(Context context, List<String> list) {
+    public ListDropDownAdapter(Context context, List<String> userEntityList) {
         this.context = context;
-        this.list = list;
+        this.userEntityList = userEntityList;
     }
 
     public void setCheckItem(int position) {
@@ -28,12 +30,12 @@ public class ListDropDownAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return list.size();
+        return userEntityList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return list.get(position);
+        return userEntityList.get(position);
     }
 
     @Override
@@ -56,7 +58,7 @@ public class ListDropDownAdapter extends BaseAdapter {
     }
 
     private void fillValue(int position, ViewHolder viewHolder) {
-        viewHolder.mText.setText(list.get(position));
+        viewHolder.mText.setText(userEntityList.get(position));
 //        if (checkItemPosition != -1) {
 //            if (checkItemPosition == position) {
 //                viewHolder.mText.setTextColor(context.getResources().getColor(R.color.drop_down_selected));
